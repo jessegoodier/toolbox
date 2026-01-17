@@ -11,7 +11,7 @@ variable "REGISTRY" {
 }
 
 group "default" {
-  targets = ["common", "aws"]
+  targets = ["common", "aws", "gcp", "azure"]
 }
 
 target "common" {
