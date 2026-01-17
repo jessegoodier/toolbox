@@ -6,8 +6,7 @@ on:
   workflow_dispatch: # Manual trigger
 
 env:
-  REGISTRY: ghcr.io
-  USERNAME: jessegoodier
+  REGISTRY: ghcr.io/jessegoodier
 
 jobs:
   build:
@@ -29,7 +28,7 @@ jobs:
       - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
