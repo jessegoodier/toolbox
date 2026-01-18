@@ -9,8 +9,9 @@ A debug container for Kubernetes. Because `kubectl exec` into an alpine containe
 - `dig`, `nslookup`, `doggo`, `mtr`, `ping`, `netcat`, `tcpdump`
 - `htop`, `strace`, `lsof`, `ps`
 - `ripgrep`, `rclone`, `tree`, `less`, `file`
+- `fzf`, `fd`, `eza`
 - `neovim`, `git`
-- `bash` + `zsh` with completions and syntax highlighting
+- `bash` + `zsh` with completions, syntax highlighting, autosuggestions, and `fzf-tab`
 - Python 3.14 + `uv`
 
 **Cloud-specific images** (built on top of common):
