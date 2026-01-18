@@ -9,7 +9,59 @@ env:
   REGISTRY: ghcr.io/jessegoodier
 
 jobs:
+  cve-scan:
+    name: CVE Scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Needed to push reports
+    outputs:
+      cve_found: ${{ steps.check_cve.outputs.cve_found }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'ghcr.io/jessegoodier/toolbox-common:latest'
+          format: 'json'
+          output: 'trivy-results.json'
+          severity: 'CRITICAL,HIGH'
+          ignore-unfixed: true
+          exit-code: '0' # Don't fail the job, we want to process results
+
+      - name: Check for vulnerabilities and generate report
+        id: check_cve
+        run: |
+          # Create directory
+          YEAR=$(date +%Y)
+          MONTH=$(date +%m)
+          DAY=$(date +%d)
+          mkdir -p cve-audit/$YEAR
+
+          # Check if results file is not empty and has vulnerabilities
+          if grep -q "Vulnerabilities" trivy-results.json; then
+            echo "High/Critical vulnerabilities found."
+            echo "cve_found=true" >> $GITHUB_OUTPUT
+            
+            # Format report
+            python3 .github/scripts/format_cve_report.py trivy-results.json > cve-audit/$YEAR/$MONTH-$DAY.md
+            
+            # Commit report
+            git config --global user.name 'github-actions[bot]'
+            git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+            git add cve-audit/$YEAR/$MONTH-$DAY.md
+            # Only commit if there are changes
+            git diff --quiet && git diff --staged --quiet || git commit -m "chore: add CVE audit report for $(date +%Y-%m-%d)"
+            git push
+          else
+            echo "No fixable high/critical vulnerabilities found."
+            echo "cve_found=false" >> $GITHUB_OUTPUT
+          fi
+
   build:
+    needs: cve-scan
+    if: ${{ github.event_name == 'workflow_dispatch' || needs.cve-scan.outputs.cve_found == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
