@@ -4,6 +4,16 @@ on:
   schedule:
     - cron: '0 0 * * *' # Daily at midnight
   workflow_dispatch: # Manual trigger
+    inputs:
+      action:
+        description: 'Choose action'
+        required: true
+        default: 'push if fixable CVE found'
+        type: choice
+        options:
+          - 'push if fixable CVE found'
+          - 'cve scan only'
+          - 'push only'
 
 env:
   REGISTRY: ghcr.io/jessegoodier
@@ -11,6 +21,7 @@ env:
 jobs:
   cve-scan:
     name: CVE Scan
+    if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.action != 'push only') }}
     runs-on: ubuntu-latest
     permissions:
       contents: write # Needed to push reports
@@ -61,7 +72,7 @@ jobs:
 
   build:
     needs: cve-scan
-    if: ${{ github.event_name == 'workflow_dispatch' || needs.cve-scan.outputs.cve_found == 'true' }}
+    if: ${{ !cancelled() && ( (github.event_name == 'workflow_dispatch' && inputs.action == 'push only') || (needs.cve-scan.result == 'success' && needs.cve-scan.outputs.cve_found == 'true' && (github.event_name == 'schedule' || inputs.action != 'cve scan only')) ) }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
