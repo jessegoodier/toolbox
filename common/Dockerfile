@@ -39,47 +39,25 @@ FROM python:3.14-alpine
 RUN --mount=type=cache,target=/var/cache/apk \
     apk add \
     # Shell and basics
-    zsh \
-    bash \
-    bash-completion \
-    zsh-syntax-highlighting \
-    zsh-autosuggestions \
+    zsh bash bash-completion zsh-syntax-highlighting zsh-autosuggestions \
     # HTTP and data transfer
-    curl \
-    wget \
+    curl wget \
     # JSON/YAML processing
     jq \
     # Search and file tools
-    ripgrep \
-    rclone \
-    tree \
-    less \
-    file \
+    ripgrep rclone tree less file \
     # Networking and DNS
-    bind-tools \
-    netcat-openbsd \
-    tcpdump \
-    openssl \
-    mtr \
-    iputils \
-    doggo \
+    bind-tools netcat-openbsd tcpdump openssl mtr iputils doggo \
     # System and process debugging
-    htop \
-    strace \
-    procps \
-    lsof \
+    htop strace procps lsof \
     # Editors and version control
-    neovim \
-    git \
+    neovim git \
     # Compatibility and certs
     ca-certificates \
     # python utils
-    uv \
-    gcompat \
-    libc6-compat \
+    uv gcompat libc6-compat \
     # Interactive tools
-    fzf \
-    fd
+    fzf fd eza
 
 # Copy binaries and tools from builder
 COPY --from=builder /out /
