@@ -54,21 +54,21 @@ jobs:
           if grep -q "Vulnerabilities" trivy-results.json; then
             echo "High/Critical vulnerabilities found."
             echo "cve_found=true" >> $GITHUB_OUTPUT
-            
-            # Format report
-            python3 .github/scripts/format_cve_report.py trivy-results.json > cve-audit/$YEAR/$MONTH-$DAY.md
-            
-            # Commit report
-            git config --global user.name 'github-actions[bot]'
-            git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-            git add cve-audit/$YEAR/$MONTH-$DAY.md
-            # Only commit if there are changes
-            git diff --quiet && git diff --staged --quiet || git commit -m "chore: add CVE audit report for $(date +%Y-%m-%d)"
-            git push
           else
             echo "No fixable high/critical vulnerabilities found."
             echo "cve_found=false" >> $GITHUB_OUTPUT
           fi
+            
+          # Format report
+          python3 .github/scripts/format_cve_report.py trivy-results.json > cve-audit/$YEAR/$MONTH-$DAY.md
+          
+          # Commit report
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add cve-audit/$YEAR/$MONTH-$DAY.md
+          # Only commit if there are changes
+          git diff --quiet && git diff --staged --quiet || git commit -m "chore: add CVE audit report for $(date +%Y-%m-%d)"
+          git push
 
   build:
     needs: cve-scan
