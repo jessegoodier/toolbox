@@ -1,5 +1,5 @@
 FROM toolbox-common
-
+USER root
 # Install Azure CLI
 # Use system python (stable) for Azure CLI to avoid conflicts with Python 3.14 (unstable/alpha)
 # and use venv to keep it isolated.
@@ -12,3 +12,5 @@ RUN apk add --no-cache python3 py3-pip gcc musl-dev python3-dev libffi-dev opens
     # Cleanup build deps
     apk del gcc musl-dev python3-dev libffi-dev openssl-dev make cargo linux-headers && \
     az --version
+
+USER toolbox
