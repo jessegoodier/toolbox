@@ -1,5 +1,5 @@
 # add uv tools dir to path
-export PATH="/root/.local/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
 
 # Completion configuration
 autoload -Uz compinit

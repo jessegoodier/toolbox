@@ -80,9 +80,16 @@ RUN rclone completion zsh /usr/share/zsh/site-functions/_rclone
 RUN doggo completion zsh > /usr/share/zsh/site-functions/_doggo || echo "doggo zsh completion failed"
 
 # Copy configuration files (Last to optimize caching)
+# Create user toolbox with uid 1001
+RUN adduser -D -u 1001 -s /bin/zsh toolbox
+
+# Copy configuration files (Last to optimize caching)
 COPY .zshrc /root/.zshrc
 COPY .bashrc /root/.bashrc
+COPY --chown=toolbox:toolbox .zshrc /home/toolbox/.zshrc
+COPY --chown=toolbox:toolbox .bashrc /home/toolbox/.bashrc
 
 # Set zsh as the default shell
+USER toolbox
 ENV SHELL=/bin/zsh
 WORKDIR /toolbox
