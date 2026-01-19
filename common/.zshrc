@@ -17,8 +17,8 @@ setopt HIST_IGNORE_SPACE
 # Colored Prompt
 autoload -Uz colors && colors
 # User @ Host : Directory $
-PROMPT='%F{blue}(zsh)%f %F{cyan}%n%f@%F{green}toolbox%f:%F{blue}%~%f%(!.#.$)
-> '
+PROMPT='%F{blue}(zsh)%f %F{cyan}%n%f@%F{green}toolbox%f:%F{blue}%/%f
+%(!.#.$) '
 
 # Zsh Autosuggestions
 if [ -f /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
