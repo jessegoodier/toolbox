@@ -75,7 +75,7 @@ jobs:
     if: ${{ !cancelled() && ( (github.event_name == 'workflow_dispatch' && inputs.action == 'push only') || (needs.cve-scan.result == 'success' && needs.cve-scan.outputs.cve_found == 'true' && (github.event_name == 'schedule' || inputs.action != 'cve scan only')) ) }}
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
 
     steps:
@@ -101,3 +101,43 @@ jobs:
         env:
           PUSH: true
           CI: true
+
+      - name: Generate build history report
+        run: |
+          YEAR=$(date +%Y)
+          MONTH=$(date +%m)
+          DAY=$(date +%d)
+          DATE_TAG=$(date +%Y-%m-%d)
+          REGISTRY="ghcr.io/jessegoodier"
+          REPORT="build-history/$YEAR/$MONTH-$DAY.md"
+
+          mkdir -p build-history/$YEAR
+
+          echo "# Build History - $DATE_TAG" > "$REPORT"
+          echo "" >> "$REPORT"
+          echo "Images built and pushed to GitHub Container Registry." >> "$REPORT"
+          echo "" >> "$REPORT"
+
+          for IMAGE in toolbox-common toolbox-aws toolbox-gcp toolbox-azure; do
+            DIGEST=$(docker buildx imagetools inspect $REGISTRY/$IMAGE:latest --format '{{.Manifest.Digest}}')
+            echo "## $IMAGE" >> "$REPORT"
+            echo "" >> "$REPORT"
+            echo '```bash' >> "$REPORT"
+            echo "# Latest" >> "$REPORT"
+            echo "$REGISTRY/$IMAGE:latest" >> "$REPORT"
+            echo "" >> "$REPORT"
+            echo "# Date tagged" >> "$REPORT"
+            echo "$REGISTRY/$IMAGE:$DATE_TAG" >> "$REPORT"
+            echo "" >> "$REPORT"
+            echo "# SHA pinned" >> "$REPORT"
+            echo "$REGISTRY/$IMAGE@$DIGEST" >> "$REPORT"
+            echo '```' >> "$REPORT"
+            echo "" >> "$REPORT"
+          done
+
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git pull --rebase origin main
+          git add "$REPORT"
+          git diff --quiet && git diff --staged --quiet || git commit -m "chore: add build history for $DATE_TAG"
+          git push
