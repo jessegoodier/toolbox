@@ -1,7 +1,7 @@
 FROM python:3.14-alpine AS builder
 
 # Install tools needed for downloading/extracting
-RUN apk add --no-cache curl wget git jq tar
+RUN apk add --no-cache curl wget git jq tar bash
 
 ARG TARGETPLATFORM
 
@@ -51,13 +51,15 @@ RUN --mount=type=cache,target=/var/cache/apk \
     # System and process debugging
     htop strace procps lsof \
     # Editors and version control
-    neovim git \
+    vim neovim git \
     # Compatibility and certs
     ca-certificates \
     # python utils
     uv gcompat libc6-compat \
     # Interactive tools
-    fzf fd eza
+    fzf fd eza \
+    # Kube config fix
+    shadow su-exec
 
 # Copy binaries and tools from builder
 COPY --from=builder /out /
@@ -83,13 +85,35 @@ RUN doggo completion zsh > /usr/share/zsh/site-functions/_doggo || echo "doggo z
 # Create user toolbox with uid 1001
 RUN adduser -D -u 1001 -s /bin/zsh toolbox
 
-# Copy configuration files (Last to optimize caching)
+# Copy configuration files
+COPY .zshrc /home/toolbox/.zshrc
+COPY .bashrc /home/toolbox/.bashrc
+COPY .vimrc /home/toolbox/.vimrc
+COPY aliases-common /home/toolbox/aliases-common
+# Also copy to root for root shell usage
 COPY .zshrc /root/.zshrc
 COPY .bashrc /root/.bashrc
-COPY --chown=toolbox:toolbox .zshrc /home/toolbox/.zshrc
-COPY --chown=toolbox:toolbox .bashrc /home/toolbox/.bashrc
+COPY .vimrc /root/.vimrc
+COPY aliases-common /root/aliases-common
+# Copy rclone config template
+RUN mkdir -p /home/toolbox/.config/rclone /root/.config/rclone
+COPY rclone.conf /home/toolbox/.config/rclone/rclone.conf
+COPY rclone.conf /root/.config/rclone/rclone.conf
+# Copy kube config fix script
+COPY kube-config-fix.sh /usr/local/bin/kube-config-fix.sh
 
-# Set zsh as the default shell
+# Configure permissions for arbitrary users (OpenShift/K8s random UID support)
+# We make /home/toolbox writable by anyone so that random UIDs can use it as HOME
+RUN chown -R toolbox:toolbox /home/toolbox && \
+    chmod -R 777 /home/toolbox && \
+    chown -R toolbox:toolbox /toolbox && \
+    chmod -R 777 /toolbox && \
+    chmod +x /usr/local/bin/kube-config-fix.sh
+
 USER toolbox
+ENV USER=toolbox
 ENV SHELL=/bin/zsh
-WORKDIR /toolbox
+ENV HOME=/home/toolbox
+WORKDIR /home/toolbox
+
+CMD ["sleep", "infinity"]

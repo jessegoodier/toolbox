@@ -3,7 +3,7 @@ export PATH="$HOME/.local/bin:$PATH"
 
 # Completion configuration
 autoload -Uz compinit
-compinit
+compinit -u
 
 # History configuration
 HISTFILE=$HOME/.zsh_history
@@ -17,7 +17,8 @@ setopt HIST_IGNORE_SPACE
 # Colored Prompt
 autoload -Uz colors && colors
 # User @ Host : Directory $
-PROMPT='%F{blue}(zsh)%f %F{cyan}%n%f@%F{green}toolbox%f:%F{blue}%~%f%(!.#.$) '
+PROMPT='%F{blue}(zsh)%f %F{cyan}%n%f@%F{green}toolbox%f:%F{blue}%~%f%(!.#.$)
+> '
 
 # Zsh Autosuggestions
 if [ -f /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
@@ -83,6 +84,4 @@ if [ -f /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.z
     source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 fi
 
-alias ll='ls -alF'
-alias la='ls -A'
-alias l='ls -CF'
+source $HOME/aliases-common

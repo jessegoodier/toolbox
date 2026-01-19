@@ -8,15 +8,25 @@ PUSH=${PUSH:-false}
 
 # Parse arguments
 TEST_MODE=false
+TARGET_IMAGE=""
 while [[ "$#" -gt 0 ]]; do
     case $1 in
         --test) TEST_MODE=true ;;
+        --push=*)
+            PUSH=true
+            TARGET_IMAGE="${1#*=}"
+            if [[ ! "$TARGET_IMAGE" =~ ^(common|aws|gcp|azure)$ ]]; then
+                echo "Error: Invalid target '$TARGET_IMAGE'. Must be one of: common, aws, gcp, azure."
+                exit 1
+            fi
+            ;;
     esac
     shift
 done
 
 echo "Building images with tags: latest, $TODAY"
 echo "Push enabled: $PUSH"
+echo "Target: ${TARGET_IMAGE:-all (default group)}"
 echo "Test mode: $TEST_MODE"
 
 # Create a buildx builder if one doesn't exist (needed for multi-arch)
@@ -61,7 +71,7 @@ else
 
     # Run bake
     # Pass DATE_TAG to override the default "latest" for the second tag
-    DATE_TAG=$TODAY docker buildx bake $ARGS
+    DATE_TAG=$TODAY docker buildx bake $ARGS $TARGET_IMAGE
 
     echo "Build complete."
 fi
