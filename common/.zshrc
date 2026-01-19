@@ -4,6 +4,7 @@ source "$HOME/shell-common"
 # Completion configuration
 autoload -Uz compinit
 compinit -u
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
 
 # Auto cd - type directory name to cd into it
 setopt AUTO_CD
@@ -12,7 +13,6 @@ setopt AUTO_CD
 HISTFILE=$HOME/.zsh_history
 SAVEHIST=10000
 setopt APPEND_HISTORY
-setopt SHARE_HISTORY
 setopt HIST_IGNORE_DUPS
 setopt HIST_IGNORE_SPACE
 
