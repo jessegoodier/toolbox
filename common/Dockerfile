@@ -85,17 +85,23 @@ RUN doggo completion zsh > /usr/share/zsh/site-functions/_doggo || echo "doggo z
 # Create user toolbox with uid 1001
 RUN adduser -D -u 1001 -s /bin/zsh toolbox
 
-# Copy configuration files (Last to optimize caching)
+# Copy configuration files
+COPY .zshrc /home/toolbox/.zshrc
+COPY .bashrc /home/toolbox/.bashrc
+# Also copy to root for root shell usage
 COPY .zshrc /root/.zshrc
 COPY .bashrc /root/.bashrc
-COPY --chown=toolbox:toolbox .zshrc /home/toolbox/.zshrc
-COPY --chown=toolbox:toolbox .bashrc /home/toolbox/.bashrc
+
+# Configure permissions for arbitrary users (OpenShift/K8s random UID support)
+# We make /home/toolbox writable by anyone so that random UIDs can use it as HOME
+RUN chown -R toolbox:toolbox /home/toolbox && \
+    chmod -R 777 /home/toolbox
 
 # Copy kube config fix script
-COPY kube-config-fix.sh /user/toolbox/kube-config-fix.sh
-RUN chmod +x /user/toolbox/kube-config-fix.sh
+COPY kube-config-fix.sh /usr/local/bin/kube-config-fix.sh
+RUN chmod +x /usr/local/bin/kube-config-fix.sh
 
-# Set zsh as the default shell
 USER toolbox
 ENV SHELL=/bin/zsh
-WORKDIR /toolbox
+ENV HOME=/home/toolbox
+WORKDIR /home/toolbox

@@ -3,7 +3,7 @@ export PATH="$HOME/.local/bin:$PATH"
 
 # Completion configuration
 autoload -Uz compinit
-compinit
+compinit -u
 
 # History configuration
 HISTFILE=$HOME/.zsh_history
