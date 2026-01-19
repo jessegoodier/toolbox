@@ -57,7 +57,9 @@ RUN --mount=type=cache,target=/var/cache/apk \
     # python utils
     uv gcompat libc6-compat \
     # Interactive tools
-    fzf fd eza
+    fzf fd eza \
+    # Kube config fix
+    shadow su-exec
 
 # Copy binaries and tools from builder
 COPY --from=builder /out /
@@ -88,6 +90,10 @@ COPY .zshrc /root/.zshrc
 COPY .bashrc /root/.bashrc
 COPY --chown=toolbox:toolbox .zshrc /home/toolbox/.zshrc
 COPY --chown=toolbox:toolbox .bashrc /home/toolbox/.bashrc
+
+# Copy kube config fix script
+COPY kube-config-fix.sh /user/toolbox/kube-config-fix.sh
+RUN chmod +x /user/toolbox/kube-config-fix.sh
 
 # Set zsh as the default shell
 USER toolbox
