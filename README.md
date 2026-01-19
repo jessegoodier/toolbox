@@ -11,7 +11,7 @@ A debug container for Kubernetes. Because `kubectl exec` into an alpine containe
 - `ripgrep`, `rclone`, `tree`, `less`, `file`
 - `fzf`, `fd`, `eza`
 - `neovim`, `git`
-- `bash` + `zsh` with completions, syntax highlighting, autosuggestions, and `fzf-tab`
+- `bash` + `zsh` with completions, syntax highlighting, autosuggestions
 - Python 3.14 + `uv`
 
 **Cloud-specific images** (built on top of common):

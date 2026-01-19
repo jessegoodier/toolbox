@@ -6,8 +6,7 @@ RUN apk add --no-cache curl wget git jq tar bash
 ARG TARGETPLATFORM
 
 # Initialize output directories
-RUN mkdir -p /out/usr/local/bin \
-    && mkdir -p /out/usr/share/zsh/plugins/fzf-tab
+RUN mkdir -p /out/usr/local/bin
 
 # 1. Download yq (latest version)
 RUN case ${TARGETPLATFORM} in \
@@ -27,9 +26,6 @@ RUN case ${TARGETPLATFORM} in \
     curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/${KUBECTL_ARCH}/kubectl" && \
     chmod +x kubectl && \
     mv kubectl /out/usr/local/bin/
-
-# 3. Clone fzf-tab
-RUN git clone https://github.com/Aloxaf/fzf-tab /out/usr/share/zsh/plugins/fzf-tab
 
 # === Final Stage ===
 FROM python:3.14-alpine
