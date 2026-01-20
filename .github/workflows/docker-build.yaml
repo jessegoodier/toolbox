@@ -130,7 +130,33 @@ jobs:
 
           for IMAGE in toolbox-common toolbox-aws toolbox-gcp toolbox-azure; do
             DIGEST=$(docker buildx imagetools inspect $REGISTRY/$IMAGE:latest 2>/dev/null | grep -m1 "^Digest:" | awk '{print $2}')
+
+            # Get architecture-specific details
+            MANIFEST_INDEX=$(docker buildx imagetools inspect $REGISTRY/$IMAGE:latest --raw 2>/dev/null)
+            AMD64_DIGEST=$(echo "$MANIFEST_INDEX" | jq -r '.manifests[] | select(.platform.architecture == "amd64" and .platform.os == "linux") | .digest')
+            ARM64_DIGEST=$(echo "$MANIFEST_INDEX" | jq -r '.manifests[] | select(.platform.architecture == "arm64" and .platform.os == "linux") | .digest')
+
+            # Get layer info for each architecture
+            AMD64_MANIFEST=$(docker buildx imagetools inspect "$REGISTRY/$IMAGE@$AMD64_DIGEST" --raw 2>/dev/null)
+            ARM64_MANIFEST=$(docker buildx imagetools inspect "$REGISTRY/$IMAGE@$ARM64_DIGEST" --raw 2>/dev/null)
+
+            AMD64_LAYERS=$(echo "$AMD64_MANIFEST" | jq '.layers | length')
+            ARM64_LAYERS=$(echo "$ARM64_MANIFEST" | jq '.layers | length')
+            AMD64_SIZE=$(echo "$AMD64_MANIFEST" | jq '[.layers[].size] | add')
+            ARM64_SIZE=$(echo "$ARM64_MANIFEST" | jq '[.layers[].size] | add')
+
+            # Convert to human readable MB
+            AMD64_SIZE_MB=$(echo "scale=1; $AMD64_SIZE / 1048576" | bc)
+            ARM64_SIZE_MB=$(echo "scale=1; $ARM64_SIZE / 1048576" | bc)
+
             echo "## $IMAGE" >> "$REPORT"
+            echo "" >> "$REPORT"
+            echo "### Image Details" >> "$REPORT"
+            echo "" >> "$REPORT"
+            echo "| Architecture | Layers | Compressed Size |" >> "$REPORT"
+            echo "|--------------|--------|-----------------|" >> "$REPORT"
+            echo "| linux/amd64 | $AMD64_LAYERS | ${AMD64_SIZE_MB} MB |" >> "$REPORT"
+            echo "| linux/arm64 | $ARM64_LAYERS | ${ARM64_SIZE_MB} MB |" >> "$REPORT"
             echo "" >> "$REPORT"
             echo "### Latest" >> "$REPORT"
             echo '```' >> "$REPORT"
