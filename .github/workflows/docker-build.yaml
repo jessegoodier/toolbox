@@ -31,44 +31,64 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: 'ghcr.io/jessegoodier/toolbox-common:latest'
-          format: 'json'
-          output: 'trivy-results.json'
-          severity: 'CRITICAL,HIGH'
-          ignore-unfixed: true
-          exit-code: '0' # Don't fail the job, we want to process results
+      - name: Install Trivy
+        run: |
+          sudo apt-get install -y wget apt-transport-https gnupg lsb-release
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+          echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update
+          sudo apt-get install -y trivy
+
+      - name: Run Trivy vulnerability scanner on all images
+        run: |
+          mkdir -p trivy-results
+          for IMAGE in toolbox-common toolbox-aws toolbox-gcp toolbox-azure; do
+            echo "Scanning $REGISTRY/$IMAGE:latest..."
+            trivy image --format json --output "trivy-results/$IMAGE.json" \
+              --severity CRITICAL,HIGH --ignore-unfixed \
+              "$REGISTRY/$IMAGE:latest" || true
+          done
 
       - name: Check for vulnerabilities and generate report
         id: check_cve
         run: |
-          # Create directory
           YEAR=$(date +%Y)
           MONTH=$(date +%m)
           DAY=$(date +%d)
           mkdir -p cve-audit/$YEAR
 
-          # Check if results file is not empty and has vulnerabilities
-          if grep -q "Vulnerabilities" trivy-results.json; then
-            echo "High/Critical vulnerabilities found."
+          # Check if any image has vulnerabilities
+          CVE_FOUND=false
+          for IMAGE in toolbox-common toolbox-aws toolbox-gcp toolbox-azure; do
+            if grep -q "Vulnerabilities" "trivy-results/$IMAGE.json" 2>/dev/null; then
+              echo "High/Critical vulnerabilities found in $IMAGE."
+              CVE_FOUND=true
+            fi
+          done
+
+          if [ "$CVE_FOUND" = "true" ]; then
             echo "cve_found=true" >> $GITHUB_OUTPUT
           else
             echo "No fixable high/critical vulnerabilities found."
             echo "cve_found=false" >> $GITHUB_OUTPUT
           fi
-            
-          # Format report
-          python3 .github/scripts/format_cve_report.py trivy-results.json > cve-audit/$YEAR/$MONTH-$DAY.md
-          
+
+          # Format report (updated script handles multiple images)
+          python3 .github/scripts/format_cve_report.py trivy-results > cve-audit/$YEAR/$MONTH-$DAY.md
+
           # Commit report
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add cve-audit/$YEAR/$MONTH-$DAY.md
-          # Only commit if there are changes
           git diff --quiet && git diff --staged --quiet || git commit -m "chore: add CVE audit report for $(date +%Y-%m-%d)"
           git push
+
+      - name: Upload CVE results
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-results
+          path: trivy-results/
+          retention-days: 1
 
   build:
     needs: cve-scan
@@ -81,6 +101,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Download CVE scan results
+        uses: actions/download-artifact@v4
+        with:
+          name: trivy-results
+          path: trivy-results/
+        continue-on-error: true  # May not exist for 'push only' runs
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -173,6 +200,32 @@ jobs:
             echo "$REGISTRY/$IMAGE@$DIGEST" >> "$REPORT"
             echo '```' >> "$REPORT"
             echo "" >> "$REPORT"
+
+            # Add resolved CVEs section if CVE data exists for this image
+            CVE_FILE="trivy-results/$IMAGE.json"
+            if [ -f "$CVE_FILE" ]; then
+              CVE_COUNT=$(jq '[.Results[]?.Vulnerabilities // [] | .[]?] | length' "$CVE_FILE" 2>/dev/null || echo "0")
+              if [ "$CVE_COUNT" -gt 0 ]; then
+                echo "### Resolved CVEs" >> "$REPORT"
+                echo "" >> "$REPORT"
+                echo "The following vulnerabilities were detected before this build and are now resolved:" >> "$REPORT"
+                echo "" >> "$REPORT"
+                echo "| ID | Severity | Package | Fixed Version |" >> "$REPORT"
+                echo "|----| ---------|---------|---------------|" >> "$REPORT"
+
+                # Extract CVE details using jq
+                jq -r '
+                  [.Results[]?.Vulnerabilities // [] | .[]] |
+                  unique_by(.VulnerabilityID) |
+                  sort_by(.Severity) |
+                  reverse |
+                  .[] |
+                  "| [\(.VulnerabilityID)](\(.PrimaryURL // "")) | \(.Severity) | \(.PkgName) | \(.FixedVersion) |"
+                ' "$CVE_FILE" >> "$REPORT" 2>/dev/null || true
+
+                echo "" >> "$REPORT"
+              fi
+            fi
           done
 
           git add "$REPORT"
