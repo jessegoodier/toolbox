@@ -140,7 +140,10 @@ jobs:
 
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git pull --rebase origin main
+          # Only pull if on main branch to avoid rebase conflicts on feature branches
+          if [ "$(git branch --show-current)" = "main" ]; then
+            git pull --rebase origin main
+          fi
 
           mkdir -p build-history/$YEAR
 
