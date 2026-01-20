@@ -6,8 +6,7 @@ RUN apk add --no-cache curl wget git jq tar bash
 ARG TARGETPLATFORM
 
 # Initialize output directories
-RUN mkdir -p /out/usr/local/bin \
-    && mkdir -p /out/usr/share/zsh/plugins/fzf-tab
+RUN mkdir -p /out/usr/local/bin
 
 # 1. Download yq (latest version)
 RUN case ${TARGETPLATFORM} in \
@@ -27,9 +26,6 @@ RUN case ${TARGETPLATFORM} in \
     curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/${KUBECTL_ARCH}/kubectl" && \
     chmod +x kubectl && \
     mv kubectl /out/usr/local/bin/
-
-# 3. Clone fzf-tab
-RUN git clone https://github.com/Aloxaf/fzf-tab /out/usr/share/zsh/plugins/fzf-tab
 
 # === Final Stage ===
 FROM python:3.14-alpine
@@ -89,12 +85,12 @@ RUN adduser -D -u 1001 -s /bin/zsh toolbox
 COPY .zshrc /home/toolbox/.zshrc
 COPY .bashrc /home/toolbox/.bashrc
 COPY .vimrc /home/toolbox/.vimrc
-COPY aliases-common /home/toolbox/aliases-common
+COPY shell-common /home/toolbox/shell-common
 # Also copy to root for root shell usage
 COPY .zshrc /root/.zshrc
 COPY .bashrc /root/.bashrc
 COPY .vimrc /root/.vimrc
-COPY aliases-common /root/aliases-common
+COPY shell-common /root/shell-common
 # Copy rclone config template
 RUN mkdir -p /home/toolbox/.config/rclone /root/.config/rclone
 COPY rclone.conf /home/toolbox/.config/rclone/rclone.conf

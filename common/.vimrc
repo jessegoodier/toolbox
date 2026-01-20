@@ -6,8 +6,7 @@ set maxmempattern=5000
 " Use 256 colors
 set t_Co=256
 
-" Color scheme (desert works well in terminals)
-colorscheme desert
+set background=dark
 
 " Highlight search results
 set hlsearch
