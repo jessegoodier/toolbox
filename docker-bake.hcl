@@ -11,7 +11,7 @@ variable "REGISTRY" {
 }
 
 group "default" {
-  targets = ["common", "aws", "gcp", "azure"]
+  targets = ["common", "aws", "gcp", "azure", "combined"]
 }
 
 target "common" {
@@ -49,4 +49,19 @@ target "azure" {
   }
   platforms = ["linux/amd64", "linux/arm64"]
   tags = ["${REGISTRY}/toolbox-azure:${TAG}", "${REGISTRY}/toolbox-azure:${DATE_TAG}"]
+}
+
+target "combined" {
+  context = "combined"
+  dockerfile = "Dockerfile"
+  contexts = {
+    "toolbox-common" = "target:common"
+  }
+  platforms = ["linux/amd64", "linux/arm64"]
+  tags = [
+    "${REGISTRY}/toolbox-combined:${TAG}",
+    "${REGISTRY}/toolbox-combined:${DATE_TAG}",
+    "${REGISTRY}/toolbox:${TAG}",
+    "${REGISTRY}/toolbox:${DATE_TAG}"
+  ]
 }

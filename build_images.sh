@@ -15,8 +15,8 @@ while [[ "$#" -gt 0 ]]; do
         --push=*)
             PUSH=true
             TARGET_IMAGE="${1#*=}"
-            if [[ ! "$TARGET_IMAGE" =~ ^(common|aws|gcp|azure)$ ]]; then
-                echo "Error: Invalid target '$TARGET_IMAGE'. Must be one of: common, aws, gcp, azure."
+            if [[ ! "$TARGET_IMAGE" =~ ^(common|aws|gcp|azure|combined)$ ]]; then
+                echo "Error: Invalid target '$TARGET_IMAGE'. Must be one of: common, aws, gcp, azure, combined."
                 exit 1
             fi
             ;;
