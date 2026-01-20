@@ -23,7 +23,9 @@ RUN case ${TARGETPLATFORM} in \
     linux/arm64) KUBECTL_ARCH="arm64" ;; \
     *) echo "Unsupported platform: ${TARGETPLATFORM}" && exit 1 ;; \
     esac && \
-    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/${KUBECTL_ARCH}/kubectl" && \
+    KUBECTL_VERSION=$(curl -L -s --retry 3 --retry-delay 2 https://dl.k8s.io/release/stable.txt) && \
+    if [ -z "$KUBECTL_VERSION" ]; then echo "Failed to get kubectl version" && exit 1; fi && \
+    curl -LO --retry 3 --retry-delay 2 "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${KUBECTL_ARCH}/kubectl" && \
     chmod +x kubectl && \
     mv kubectl /out/usr/local/bin/
 
