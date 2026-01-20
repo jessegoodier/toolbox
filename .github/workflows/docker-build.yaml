@@ -111,6 +111,10 @@ jobs:
           REGISTRY="ghcr.io/jessegoodier"
           REPORT="build-history/$YEAR/$MONTH-$DAY.md"
 
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git pull --rebase origin main
+
           mkdir -p build-history/$YEAR
 
           echo "# Build History - $DATE_TAG" > "$REPORT"
@@ -145,9 +149,6 @@ jobs:
             echo "" >> "$REPORT"
           done
 
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git pull --rebase origin main
           git add "$REPORT"
           git diff --quiet && git diff --staged --quiet || git commit -m "chore: add build history for $DATE_TAG"
           git push
