@@ -25,7 +25,10 @@ export HISTCONTROL=ignoreboth
 # Colored Prompt
 # Shell:User @ Host : Directory ($/#)
 # Blue Shell, Cyan User, Green Host, Blue Directory, $/#
-export PS1='\[\033[01;34m\](bash)\[\033[00m\] \[\033[01;36m\]\u\[\033[00m\]@\[\033[01;32m\]toolbox\[\033[00m\]:\[\033[01;34m\]$PWD\[\033[00m\]
+# Use "toolbox" if running with unknown UID (e.g., debug containers with random UID)
+_ps1_user=$(id -un 2>/dev/null || echo "toolbox")
+[[ "$_ps1_user" == "I have no name!" ]] && _ps1_user="toolbox"
+export PS1='\[\033[01;34m\](bash)\[\033[00m\] \[\033[01;36m\]$_ps1_user\[\033[00m\]@\[\033[01;32m\]toolbox\[\033[00m\]:\[\033[01;34m\]$PWD\[\033[00m\]
 \$ '
 
 # FZF Keybindings (Alpine Path)

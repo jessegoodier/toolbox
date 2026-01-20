@@ -18,8 +18,12 @@ setopt HIST_IGNORE_SPACE
 
 # Colored Prompt
 autoload -Uz colors && colors
+setopt PROMPT_SUBST
 # User @ Host : Directory $
-PROMPT='%F{blue}(zsh)%f %F{cyan}%n%f@%F{green}toolbox%f:%F{blue}%/%f
+# Use "toolbox" if running with unknown UID (e.g., debug containers with random UID)
+_ps1_user=$(id -un 2>/dev/null || echo "toolbox")
+[[ "$_ps1_user" == "I have no name!" ]] && _ps1_user="toolbox"
+PROMPT='%F{blue}(zsh)%f %F{cyan}${_ps1_user}%f@%F{green}toolbox%f:%F{blue}%/%f
 %(!.#.$) '
 
 # Zsh Autosuggestions
