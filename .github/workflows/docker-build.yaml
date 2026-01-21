@@ -42,7 +42,7 @@ jobs:
       - name: Run Trivy vulnerability scanner on all images
         run: |
           mkdir -p trivy-results
-          for IMAGE in toolbox-common toolbox-aws toolbox-gcp toolbox-azure; do
+          for IMAGE in toolbox toolbox-common toolbox-aws toolbox-gcp toolbox-azure; do
             echo "Scanning $REGISTRY/$IMAGE:latest..."
             trivy image --format json --output "trivy-results/$IMAGE.json" \
               --severity CRITICAL,HIGH --ignore-unfixed \
@@ -59,7 +59,7 @@ jobs:
 
           # Check if any image has vulnerabilities
           CVE_FOUND=false
-          for IMAGE in toolbox-common toolbox-aws toolbox-gcp toolbox-azure; do
+          for IMAGE in toolbox toolbox-common toolbox-aws toolbox-gcp toolbox-azure; do
             if grep -q "Vulnerabilities" "trivy-results/$IMAGE.json" 2>/dev/null; then
               echo "High/Critical vulnerabilities found in $IMAGE."
               CVE_FOUND=true
@@ -152,13 +152,14 @@ jobs:
           echo "Images built and pushed to GitHub Container Registry." >> "$REPORT"
           echo "" >> "$REPORT"
           echo "## Table of Contents" >> "$REPORT"
+          echo "- [toolbox](#toolbox)" >> "$REPORT"
           echo "- [toolbox-common](#toolbox-common)" >> "$REPORT"
           echo "- [toolbox-aws](#toolbox-aws)" >> "$REPORT"
           echo "- [toolbox-gcp](#toolbox-gcp)" >> "$REPORT"
           echo "- [toolbox-azure](#toolbox-azure)" >> "$REPORT"
           echo "" >> "$REPORT"
 
-          for IMAGE in toolbox-common toolbox-aws toolbox-gcp toolbox-azure; do
+          for IMAGE in toolbox toolbox-common toolbox-aws toolbox-gcp toolbox-azure; do
             DIGEST=$(docker buildx imagetools inspect $REGISTRY/$IMAGE:latest 2>/dev/null | grep -m1 "^Digest:" | awk '{print $2}')
 
             # Get architecture-specific details

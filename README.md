@@ -2,7 +2,23 @@
 
 A debug container for Kubernetes. Because `kubectl exec` into an alpine container with nothing but `sh` is not fun.
 
+This project was created out of a need for a user-like zsh/bash shell for testing <https://github.com/jessegoodier/kpf> completions.
+
+## Quick Start
+
+The best way to use this is with the main **combined** image, which includes tools for all three major clouds:
+
+```bash
+kubectl run debug --rm -it --image=ghcr.io/jessegoodier/toolbox -- zsh
+```
+
 ## What's Inside
+
+**Main image** (`toolbox`):
+- All common tools (see below)
+- AWS CLI
+- Google Cloud SDK (`gcloud`, `gsutil`)
+- Azure CLI (`az`)
 
 **Common base image** (`toolbox-common`):
 - `openssl`, `kubectl`, `curl`, `wget`, `jq`, `yq`
@@ -14,27 +30,31 @@ A debug container for Kubernetes. Because `kubectl exec` into an alpine containe
 - `bash` + `zsh` with completions, syntax highlighting, autosuggestions
 - Python 3.14 + `uv`
 
-**Cloud-specific images** (built on top of common):
-- `toolbox-aws` - AWS CLI
-- `toolbox-gcp` - Google Cloud SDK
-- `toolbox-azure` - Azure CLI
+**Cloud-specific images** (lighter alternatives):
+- `toolbox-aws` - AWS CLI only
+- `toolbox-gcp` - Google Cloud SDK only
+- `toolbox-azure` - Azure CLI only
 
 All images are multi-arch (`amd64`/`arm64`) and rebuilt daily.
 
 ## Usage
 
 ```bash
-# One-off debug pod
-kubectl run debug --rm -it --image=ghcr.io/jessegoodier/toolbox-common -- zsh
+# All-in-one (Recommended)
+kubectl run debug --rm -it --image=ghcr.io/jessegoodier/toolbox -- zsh
 
-# Or with cloud tools
+# Specific cloud provider
 kubectl run debug --rm -it --image=ghcr.io/jessegoodier/toolbox-aws -- zsh
+
+# Minimal (Common tools only)
+kubectl run debug --rm -it --image=ghcr.io/jessegoodier/toolbox-common -- zsh
 ```
 
 ## Images
 
 | Image | Description |
 |-------|-------------|
+| `ghcr.io/jessegoodier/toolbox` | **(Recommended)** Combined tools for AWS, GCP, and Azure |
 | `ghcr.io/jessegoodier/toolbox-common` | Base image with common tools |
 | `ghcr.io/jessegoodier/toolbox-aws` | + AWS CLI |
 | `ghcr.io/jessegoodier/toolbox-gcp` | + gcloud |
