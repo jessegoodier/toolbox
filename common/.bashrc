@@ -7,6 +7,9 @@ if [ -f /usr/share/bash-completion/bash_completion ]; then
 elif [ -f /etc/bash_completion ]; then
     . /etc/bash_completion
 fi
+# Source Oh My Zsh aliases
+[ -f "$HOME/aliases-git.sh" ] && source "$HOME/aliases-git.sh"
+[ -f "$HOME/aliases-kubectl.sh" ] && source "$HOME/aliases-kubectl.sh"
 
 # Better Tab Completion (readline settings)
 # https://askubuntu.com/a/1063994

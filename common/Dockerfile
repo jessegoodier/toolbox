@@ -43,7 +43,7 @@ RUN --mount=type=cache,target=/var/cache/apk \
     # JSON/YAML processing
     jq \
     # Search and file tools
-    ripgrep rclone tree less file \
+    ripgrep rclone tree less file the_silver_searcher \
     # Networking and DNS
     bind-tools netcat-openbsd tcpdump openssl mtr iputils doggo \
     # System and process debugging
@@ -57,7 +57,8 @@ RUN --mount=type=cache,target=/var/cache/apk \
     # Interactive tools
     fzf fd eza \
     # Kube config fix
-    shadow su-exec
+    shadow su-exec \
+    && update-ca-certificates
 
 # Copy binaries and tools from builder
 COPY --from=builder /out /
@@ -88,11 +89,15 @@ COPY .zshrc /home/toolbox/.zshrc
 COPY .bashrc /home/toolbox/.bashrc
 COPY .vimrc /home/toolbox/.vimrc
 COPY shell-common /home/toolbox/shell-common
+COPY aliases-git.sh /home/toolbox/aliases-git.sh
+COPY aliases-kubectl.sh /home/toolbox/aliases-kubectl.sh
 # Also copy to root for root shell usage
 COPY .zshrc /root/.zshrc
 COPY .bashrc /root/.bashrc
 COPY .vimrc /root/.vimrc
 COPY shell-common /root/shell-common
+COPY aliases-git.sh /root/aliases-git.sh
+COPY aliases-kubectl.sh /root/aliases-kubectl.sh
 # Copy rclone config template
 RUN mkdir -p /home/toolbox/.config/rclone /root/.config/rclone
 COPY rclone.conf /home/toolbox/.config/rclone/rclone.conf
@@ -102,7 +107,9 @@ COPY kube-config-fix.sh /usr/local/bin/kube-config-fix.sh
 
 # Configure permissions for arbitrary users (OpenShift/K8s random UID support)
 # We make /home/toolbox writable by anyone so that random UIDs can use it as HOME
-RUN chown -R toolbox:toolbox /home/toolbox && \
+# Clean up any root-owned cache from build steps
+RUN rm -rf /home/.cache && \
+    chown -R toolbox:toolbox /home/toolbox && \
     chmod -R 777 /home/toolbox && \
     chown -R toolbox:toolbox /toolbox && \
     chmod -R 777 /toolbox && \
@@ -112,6 +119,6 @@ USER toolbox
 ENV USER=toolbox
 ENV SHELL=/bin/zsh
 ENV HOME=/home/toolbox
-WORKDIR /home/toolbox
+WORKDIR /toolbox
 
 CMD ["sleep", "infinity"]
