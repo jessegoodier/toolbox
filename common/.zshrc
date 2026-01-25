@@ -1,6 +1,11 @@
 # Source common shell settings
 source "$HOME/shell-common"
 
+# Source Oh My Zsh aliases
+[ -f "$HOME/aliases-git.sh" ] && source "$HOME/aliases-git.sh"
+[ -f "$HOME/aliases-kubectl.sh" ] && source "$HOME/aliases-kubectl.sh"
+alias curl='noglob curl'
+
 # Completion configuration
 autoload -Uz compinit
 compinit -u

@@ -13,10 +13,27 @@ export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border'
 
 # Aliases
 alias vi='vim'
-alias curl='noglob curl'
+
+# ls aliases
 alias ll='ls -alF'
 alias la='ls -A'
 alias l='ls -CF'
+
+# Directory navigation
+alias ...='cd ../..'
+alias ....='cd ../../..'
+alias .....='cd ../../../..'
+alias ......='cd ../../../../..'
+
+# Grep
+alias grep='grep --color=auto'
+alias egrep='egrep --color=auto'
+alias fgrep='fgrep --color=auto'
+
+# Safety
+alias cp='cp -i'
+alias mv='mv -i'
+alias rm='rm -i'
 
 # Editor
 export EDITOR='vim'
