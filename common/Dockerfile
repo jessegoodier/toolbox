@@ -68,36 +68,24 @@ RUN mkdir -p /toolbox \
     && mkdir -p /usr/share/bash-completion/completions \
     && mkdir -p /usr/share/zsh/site-functions
 
-RUN kubectl completion bash > /usr/share/bash-completion/completions/kubectl
-RUN yq shell-completion bash > /usr/share/bash-completion/completions/yq
-RUN rclone completion bash /usr/share/bash-completion/completions/rclone
-RUN doggo completion bash > /usr/share/bash-completion/completions/doggo || echo "doggo bash completion failed"
-RUN echo "complete -C '/usr/bin/aws_completer' aws" > /usr/share/bash-completion/completions/aws
-
-# Generate zsh completions
-RUN kubectl completion zsh > /usr/share/zsh/site-functions/_kubectl
-RUN yq shell-completion zsh > /usr/share/zsh/site-functions/_yq
-RUN rclone completion zsh /usr/share/zsh/site-functions/_rclone
-RUN doggo completion zsh > /usr/share/zsh/site-functions/_doggo || echo "doggo zsh completion failed"
+RUN kubectl completion bash > /usr/share/bash-completion/completions/kubectl && \
+    yq shell-completion bash > /usr/share/bash-completion/completions/yq && \
+    rclone completion bash /usr/share/bash-completion/completions/rclone && \
+    (doggo completion bash > /usr/share/bash-completion/completions/doggo || echo "doggo bash completion failed") && \
+    echo "complete -C '/usr/bin/aws_completer' aws" > /usr/share/bash-completion/completions/aws && \
+    kubectl completion zsh > /usr/share/zsh/site-functions/_kubectl && \
+    yq shell-completion zsh > /usr/share/zsh/site-functions/_yq && \
+    rclone completion zsh /usr/share/zsh/site-functions/_rclone && \
+    (doggo completion zsh > /usr/share/zsh/site-functions/_doggo || echo "doggo zsh completion failed")
 
 # Copy configuration files (Last to optimize caching)
 # Create user toolbox with uid 1001
 RUN adduser -D -u 1001 -s /bin/zsh toolbox
 
 # Copy configuration files
-COPY .zshrc /home/toolbox/.zshrc
-COPY .bashrc /home/toolbox/.bashrc
-COPY .vimrc /home/toolbox/.vimrc
-COPY shell-common /home/toolbox/shell-common
-COPY aliases-git.sh /home/toolbox/aliases-git.sh
-COPY aliases-kubectl.sh /home/toolbox/aliases-kubectl.sh
+COPY .zshrc .bashrc .vimrc shell-common aliases-git.sh aliases-kubectl.sh /home/toolbox/
 # Also copy to root for root shell usage
-COPY .zshrc /root/.zshrc
-COPY .bashrc /root/.bashrc
-COPY .vimrc /root/.vimrc
-COPY shell-common /root/shell-common
-COPY aliases-git.sh /root/aliases-git.sh
-COPY aliases-kubectl.sh /root/aliases-kubectl.sh
+COPY .zshrc .bashrc .vimrc shell-common aliases-git.sh aliases-kubectl.sh /root/
 # Copy rclone config template
 RUN mkdir -p /home/toolbox/.config/rclone /root/.config/rclone
 COPY rclone.conf /home/toolbox/.config/rclone/rclone.conf
@@ -109,10 +97,8 @@ COPY kube-config-fix.sh /usr/local/bin/kube-config-fix.sh
 # We make /home/toolbox writable by anyone so that random UIDs can use it as HOME
 # Clean up any root-owned cache from build steps
 RUN rm -rf /home/.cache && \
-    chown -R toolbox:toolbox /home/toolbox && \
-    chmod -R 777 /home/toolbox && \
-    chown -R toolbox:toolbox /toolbox && \
-    chmod -R 777 /toolbox && \
+    chown -R toolbox:toolbox /home/toolbox /toolbox && \
+    chmod -R 777 /home/toolbox /toolbox && \
     chmod +x /usr/local/bin/kube-config-fix.sh
 
 USER toolbox
