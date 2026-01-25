@@ -13,4 +13,8 @@ RUN apk add --no-cache python3 py3-pip gcc musl-dev python3-dev libffi-dev opens
     apk del gcc musl-dev python3-dev libffi-dev openssl-dev make cargo linux-headers && \
     az --version
 
+# Fix permissions for any config files created by root tools
+RUN chown -R toolbox:toolbox /home/toolbox && \
+    chmod -R 777 /home/toolbox
+
 USER toolbox
