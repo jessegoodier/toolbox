@@ -9,4 +9,8 @@ RUN curl -sSL https://sdk.cloud.google.com > /tmp/install_gcloud.sh && \
     rm /tmp/install_gcloud.sh && \
     gcloud --version
 
+# Fix permissions for any config files created by root tools
+RUN chown -R toolbox:toolbox /home/toolbox && \
+    chmod -R 777 /home/toolbox
+
 USER toolbox

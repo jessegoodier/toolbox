@@ -96,7 +96,8 @@ COPY kube-config-fix.sh /usr/local/bin/kube-config-fix.sh
 # Configure permissions for arbitrary users (OpenShift/K8s random UID support)
 # We make /home/toolbox writable by anyone so that random UIDs can use it as HOME
 # Clean up any root-owned cache from build steps
-RUN rm -rf /home/.cache && \
+RUN rm -rf /root/.cache /home/toolbox/.cache /home/toolbox/.azure && \
+    mkdir -p /home/toolbox/.cache /home/toolbox/.azure && \
     chown -R toolbox:toolbox /home/toolbox /toolbox && \
     chmod -R 777 /home/toolbox /toolbox && \
     chmod +x /usr/local/bin/kube-config-fix.sh
