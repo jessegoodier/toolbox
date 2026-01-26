@@ -69,7 +69,7 @@ jobs:
           if [ "$CVE_FOUND" = "true" ]; then
             echo "cve_found=true" >> $GITHUB_OUTPUT
           else
-            echo "✅ No fixable high/critical vulnerabilities found."
+            echo "No fixable high/critical vulnerabilities found."
             echo "cve_found=false" >> $GITHUB_OUTPUT
           fi
 

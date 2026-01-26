@@ -128,7 +128,7 @@ def main():
     if total_vulnerability_count == 0:
         # Clear previous output if no vulns across all images
         output = [f"# CVE Audit Report - {report_date}\n"]
-        output.append("No fixable HIGH or CRITICAL vulnerabilities found.\n")
+        output.append("✅ No fixable HIGH or CRITICAL vulnerabilities found.\n")
 
     print(
         "".join([line + "\n" if not line.endswith("\n") else line for line in output])
