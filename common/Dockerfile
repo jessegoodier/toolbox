@@ -43,7 +43,7 @@ RUN --mount=type=cache,target=/var/cache/apk \
     # JSON/YAML processing
     jq \
     # Search and file tools
-    ripgrep rclone tree less file the_silver_searcher \
+    ripgrep rclone tree less file the_silver_searcher coreutils \
     # Networking and DNS
     bind-tools netcat-openbsd tcpdump openssl mtr iputils doggo \
     # System and process debugging
