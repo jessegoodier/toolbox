@@ -1,0 +1,49 @@
+# Dependabot for toolbox (Docker images + GitHub Actions)
+# https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+
+updates:
+  # Keep CI actions current (checkout, buildx, login, artifacts, etc.)
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/New_York"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+
+  # Base images used by Dockerfiles with public FROM lines.
+  # Local bake targets (FROM toolbox-common*) are omitted — Dependabot cannot resolve those.
+  - package-ecosystem: "docker"
+    directories:
+      - "/common"
+      - "/common-debian"
+      - "/homebrew"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/New_York"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "docker"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    groups:
+      docker-base-images:
+        patterns:
+          - "*"
