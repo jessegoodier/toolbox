@@ -2,7 +2,7 @@
 FROM clickhouse/clickhouse-server:latest AS clickhouse
 
 # ---- clickhouse-backup stage: build from a pinned upstream commit ----
-FROM --platform=$BUILDPLATFORM golang:1.26-alpine AS clickhouse_backup_builder
+FROM --platform=$BUILDPLATFORM golang:1.27-alpine AS clickhouse_backup_builder
 
 ARG TARGETARCH
 ARG CLICKHOUSE_BACKUP_REF=c1faeb9762c4e99f72015e293c29f844f28bd084
