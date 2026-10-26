@@ -8,7 +8,7 @@ RUN go install github.com/mikefarah/yq/v4@latest && \
     mv /go/bin/yq /out/usr/local/bin/yq
 
 # === Final Stage ===
-FROM python:3.14-alpine
+FROM python:3.15-alpine
 LABEL org.opencontainers.image.source=https://github.com/jessegoodier/toolbox
 
 # Install packages available via apk
