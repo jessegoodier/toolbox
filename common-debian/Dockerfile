@@ -46,7 +46,7 @@ RUN case "${TARGETPLATFORM}" in \
     chmod +x kubectl && \
     mv kubectl /out/usr/local/bin/
 
-FROM python:3.14-slim-bookworm
+FROM python:3.15-slim-bookworm
 LABEL org.opencontainers.image.source=https://github.com/jessegoodier/toolbox
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
